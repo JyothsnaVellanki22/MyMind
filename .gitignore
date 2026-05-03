@@ -1,0 +1,23 @@
+# Node
+node_modules/
+dist/
+.vite/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+env/
+
+# Environment Variables & Secrets
+.env
+.env.local
+
+# Database
+*.db
+sql_app.db
+test.db
+
+# OS
+.DS_Store
+documentation/
