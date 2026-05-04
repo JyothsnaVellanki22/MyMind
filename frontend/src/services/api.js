@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 const AI_API_URL = import.meta.env.VITE_AI_API_URL || '/ai';
+const AI_SERVICE_TOKEN = import.meta.env.VITE_AI_SERVICE_TOKEN || 'dev-token';
 
 const api = axios.create({ baseURL: API_URL });
 
@@ -71,8 +72,12 @@ export const visionService = {
 };
 
 export const aiService = {
-  analyze: (title, content) => axios.post(`${AI_API_URL}/analyze`, { title, content }),
-  chat: (history, message, journal_context) => axios.post(`${AI_API_URL}/chat`, { history, message, journal_context }),
+  analyze: (title, content) => axios.post(`${AI_API_URL}/analyze`, { title, content }, {
+    headers: { 'X-AI-Service-Token': AI_SERVICE_TOKEN }
+  }),
+  chat: (history, message, journal_context) => axios.post(`${AI_API_URL}/chat`, { history, message, journal_context }, {
+    headers: { 'X-AI-Service-Token': AI_SERVICE_TOKEN }
+  }),
 };
 
 export default api;

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google import genai
@@ -14,13 +14,27 @@ load_dotenv()
 
 app = FastAPI(title="AI Service for Journal")
 
+# Configure CORS
+allowed_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+def verify_ai_token(token: str = Depends(lambda x: os.environ.get("AI_SERVICE_TOKEN", "dev-token"))):
+    # This is a simple protection to prevent public misuse of your Gemini API Key
+    pass
+
+from fastapi import Header
+
+async def get_token_header(x_ai_service_token: Optional[str] = Header(None)):
+    expected_token = os.environ.get("AI_SERVICE_TOKEN", "dev-token")
+    if x_ai_service_token != expected_token:
+        raise HTTPException(status_code=401, detail="Invalid AI Service Token")
+    return x_ai_service_token
 
 @app.get("/")
 def read_root():
@@ -45,7 +59,7 @@ class ChatRequest(BaseModel):
     message: str
     journal_context: str = ""
 
-@app.post("/analyze", response_model=AnalyzeResponse)
+@app.post("/analyze", response_model=AnalyzeResponse, dependencies=[Depends(get_token_header)])
 def analyze_journal(req: AnalyzeRequest):
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -90,7 +104,7 @@ def analyze_journal(req: AnalyzeRequest):
             next_action="Continue reflecting."
         )
 
-@app.post("/chat")
+@app.post("/chat", dependencies=[Depends(get_token_header)])
 def chat_with_journal(req: ChatRequest):
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:

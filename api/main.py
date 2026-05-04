@@ -13,9 +13,11 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="AI Thought Journal API")
 
+# Configure CORS properly for production
+allowed_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.environ.get("ALLOWED_ORIGINS", "*")], # In production, set this to your domain
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
