@@ -8,7 +8,7 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/main.py" },
     { "source": "/ai/(.*)", "destination": "/ai_api/main.py" },
-    { "source": "/(.*)", "destination": "/frontend/$1", "check": true },
+    { "source": "/(.*)", "destination": "/frontend/$1" },
     { "source": "/(.*)", "destination": "/frontend/index.html" }
   ],
   "headers": [
