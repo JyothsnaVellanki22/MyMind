@@ -14,11 +14,13 @@ models.Base.metadata.create_all(bind=database.engine)
 app = FastAPI(title="AI Thought Journal API")
 
 # Configure CORS properly for production
-allowed_origins = os.environ.get("ALLOWED_ORIGINS", "*").split(",")
+raw_origins = os.environ.get("ALLOWED_ORIGINS", "*").split(",")
+allowed_origins = [origin.strip().rstrip("/") for origin in raw_origins]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=False, # Changed to False to support "*" wildcard
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
