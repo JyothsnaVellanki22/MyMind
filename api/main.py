@@ -11,7 +11,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 models.Base.metadata.create_all(bind=database.engine)
 
-app = FastAPI(title="AI Thought Journal API", root_path="/api")
+app = FastAPI(
+    title="AI Thought Journal API",
+    root_path="/api" if os.environ.get("VERCEL") else ""
+)
 
 # Configure CORS properly for production
 app.add_middleware(

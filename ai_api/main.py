@@ -12,7 +12,10 @@ sys.path.append(os.path.dirname(__file__))
 
 load_dotenv()
 
-app = FastAPI(title="AI Service for Journal", root_path="/ai")
+app = FastAPI(
+    title="AI Service for Journal",
+    root_path="/ai" if os.environ.get("VERCEL") else ""
+)
 
 # Configure CORS properly for production
 app.add_middleware(
