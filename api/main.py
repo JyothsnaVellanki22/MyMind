@@ -58,18 +58,22 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 @app.post("/auth/register", response_model=schemas.User)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    print(f"DEBUG: Registering user {user.email}")
     db_user = db.query(models.User).filter(models.User.email == user.email).first()
     if db_user:
+        print(f"DEBUG: Email {user.email} already exists")
         raise HTTPException(status_code=400, detail="Email already registered")
     hashed_password = auth.get_password_hash(user.password)
     db_user = models.User(email=user.email, hashed_password=hashed_password, name=user.name)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    print(f"DEBUG: Successfully registered {user.email}")
     return db_user
 
 @app.post("/auth/login", response_model=schemas.Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    print(f"DEBUG: Login attempt for {form_data.username}")
     try:
         user = db.query(models.User).filter(models.User.email == form_data.username).first()
         if not user or not auth.verify_password(form_data.password, user.hashed_password):
