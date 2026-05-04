@@ -4,5 +4,5 @@ PyJWT
 passlib
 python-multipart
 uvicorn
-pg8000
+psycopg2-binary
 bcrypt

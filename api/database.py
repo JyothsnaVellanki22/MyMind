@@ -10,12 +10,12 @@ SQLALCHEMY_DATABASE_URL = os.getenv("POSTGRES_URL") or \
                           os.getenv("DATABASE_URL") or \
                           "sqlite:///./sql_app.db"
 
-# Handle "postgres://" vs "postgresql://" and force pg8000 driver
+# Handle "postgres://" vs "postgresql://" and force psycopg2 driver
 if SQLALCHEMY_DATABASE_URL:
     if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
-        SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql+pg8000://", 1)
+        SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
     elif SQLALCHEMY_DATABASE_URL.startswith("postgresql://"):
-        SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgresql://", "postgresql+pg8000://", 1)
+        SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 # Adjust engine parameters for PostgreSQL vs SQLite
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):

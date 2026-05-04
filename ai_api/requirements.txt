@@ -4,4 +4,4 @@ pydantic
 google-genai
 requests
 sqlalchemy
-pg8000
+psycopg2-binary
