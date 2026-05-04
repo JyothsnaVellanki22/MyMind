@@ -12,16 +12,15 @@ sys.path.append(os.path.dirname(__file__))
 
 load_dotenv()
 
-app = FastAPI(title="AI Service for Journal")
+app = FastAPI(title="AI Service for Journal", root_path="/ai")
 
-# Configure CORS properly for production - Forced Open
+# Configure CORS properly for production
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
 def verify_ai_token(token: str = Depends(lambda x: os.environ.get("AI_SERVICE_TOKEN", "dev-token"))):

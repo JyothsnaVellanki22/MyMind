@@ -11,49 +11,20 @@ from fastapi.middleware.cors import CORSMiddleware
 
 models.Base.metadata.create_all(bind=database.engine)
 
-app = FastAPI(title="AI Thought Journal API")
+app = FastAPI(title="AI Thought Journal API", root_path="/api")
 
-# Configure CORS properly for production - Forced Open
+# Configure CORS properly for production
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
 @app.get("/")
 def read_root():
     return {"status": "Main API is running", "docs": "/docs"}
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
-            raise credentials_exception
-        token_data = schemas.TokenData(email=email)
-    except Exception:
-        raise credentials_exception
-    user = db.query(models.User).filter(models.User.email == token_data.email).first()
-    if user is None:
-        raise credentials_exception
-    return user
 
 @app.post("/auth/register", response_model=schemas.User)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -70,7 +41,8 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     print(f"DEBUG: Successfully registered {user.email}")
     return db_user
 
-@app.post("/auth/login", response_model=schemas.Token)
+@app.post("/auth/login")
+@app.post("/api/auth/login", response_model=schemas.Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     print(f"DEBUG: Login attempt for {form_data.username}")
     try:
