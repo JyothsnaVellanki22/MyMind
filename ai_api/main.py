@@ -1,8 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from google import genai
-from google.genai import types
+import requests
 from typing import List, Optional
 import os
 import json
@@ -69,12 +68,11 @@ class ChatRequest(BaseModel):
 
 @app.post("/analyze", response_model=AnalyzeResponse, dependencies=[Depends(get_token_header)])
 def analyze_journal(req: AnalyzeRequest):
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("OPENROUTER_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not set.")
+        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY or GEMINI_API_KEY is not set.")
         
     try:
-        client = genai.Client(api_key=api_key)
         prompt = f"""
         Analyze the following journal entry.
         Title: {req.title}
@@ -88,14 +86,30 @@ def analyze_journal(req: AnalyzeRequest):
         
         Return ONLY valid JSON matching this schema.
         """
-        response = client.models.generate_content(
-            model='gemini-2.0-flash',
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-            ),
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": "google/gemini-2.0-flash",
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "response_format": {"type": "json_object"}
+        }
+        
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=30
         )
-        data = json.loads(response.text)
+        response.raise_for_status()
+        res_json = response.json()
+        content = res_json["choices"][0]["message"]["content"]
+        data = json.loads(content)
         return AnalyzeResponse(
             mood=data.get("mood", "Neutral"),
             tags=data.get("tags", ""),
@@ -103,7 +117,7 @@ def analyze_journal(req: AnalyzeRequest):
             next_action=data.get("next_action", "")
         )
     except Exception as e:
-        print(f"Error calling Gemini: {e}")
+        print(f"Error calling OpenRouter: {e}")
         # Return fallback data instead of crashing
         return AnalyzeResponse(
             mood="Neutral",
@@ -114,35 +128,43 @@ def analyze_journal(req: AnalyzeRequest):
 
 @app.post("/chat", dependencies=[Depends(get_token_header)])
 def chat_with_journal(req: ChatRequest):
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("OPENROUTER_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not set.")
+        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY or GEMINI_API_KEY is not set.")
         
     try:
-        client = genai.Client(api_key=api_key)
-        
         system_instruction = "You are a helpful, empathetic, and insightful journaling coach and therapist. Help the user reflect on their thoughts."
         if req.journal_context:
             system_instruction += f"\n\nHere are some of the user's recent journal entries for context:\n{req.journal_context}"
             
-        formatted_history = []
+        messages = [{"role": "system", "content": system_instruction}]
         for msg in req.history:
-            formatted_history.append(types.Content(
-                role=msg.role,
-                parts=[types.Part.from_text(text=msg.content)]
-            ))
+            role = "assistant" if msg.role in ["model", "assistant"] else "user"
+            messages.append({"role": role, "content": msg.content})
             
-        contents = formatted_history + [types.Content(role="user", parts=[types.Part.from_text(text=req.message)])]
+        messages.append({"role": "user", "content": req.message})
         
-        response = client.models.generate_content(
-            model='gemini-2.0-flash',
-            contents=contents,
-            config=types.GenerateContentConfig(
-                system_instruction=system_instruction,
-            )
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": "google/gemini-2.0-flash",
+            "messages": messages
+        }
+        
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=30
         )
-        
-        return {"response": response.text}
+        response.raise_for_status()
+        res_json = response.json()
+        reply = res_json["choices"][0]["message"]["content"]
+        return {"response": reply}
     except Exception as e:
-        print(f"Error calling Gemini: {e}")
+        print(f"Error calling OpenRouter: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
