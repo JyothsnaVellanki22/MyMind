@@ -16,6 +16,17 @@ app = FastAPI(
     root_path="/api" if os.environ.get("VERCEL") else ""
 )
 
+import importlib.util
+try:
+    ai_main_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ai_api", "main.py")
+    spec = importlib.util.spec_from_file_location("ai_api_main", ai_main_path)
+    ai_main = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ai_main)
+    app.mount("/ai", ai_main.app)
+    print("Successfully mounted AI Service under /ai")
+except Exception as e:
+    print(f"Error mounting AI Service: {e}")
+
 # Configure CORS properly for production
 allowed_origins_env = os.environ.get("ALLOWED_ORIGINS", "")
 if allowed_origins_env:

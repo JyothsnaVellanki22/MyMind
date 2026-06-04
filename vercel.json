@@ -6,10 +6,6 @@
       "use": "@vercel/python"
     },
     {
-      "src": "ai_api/main.py",
-      "use": "@vercel/python"
-    },
-    {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
@@ -24,7 +20,7 @@
     },
     {
       "source": "/ai/:path*",
-      "destination": "/ai_api/main.py"
+      "destination": "/api/main.py"
     },
     {
       "source": "/:path*",
