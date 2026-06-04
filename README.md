@@ -1,6 +1,6 @@
 # My Mind — AI-Powered Journaling & Reflection
 
-My Mind is a private, premium journaling space designed for deep reflection and goal tracking. Built with React and FastAPI, it leverages the Gemini AI model to analyze your patterns, provide empathy-driven coaching, and keep you motivated on your personal growth journey.
+My Mind is a private, premium journaling space designed for deep reflection and goal tracking. Built with React and FastAPI, it leverages OpenRouter AI models to analyze your patterns, provide empathy-driven coaching, and keep you motivated on your personal growth journey.
 
 ## Key Features
 
@@ -15,7 +15,7 @@ My Mind is a private, premium journaling space designed for deep reflection and 
 
 | Frontend | Backend | AI & Database |
 | :--- | :--- | :--- |
-| React 19 + Vite | FastAPI | Google Gemini 2.0 Flash |
+| React 19 + Vite | FastAPI | OpenRouter (Gemini 2.0 Flash) |
 | Tailwind CSS | SQLAlchemy | PostgreSQL / SQLite |
 | Framer Motion | Pydantic | Alembic (Migrations) |
 | Recharts | JWT Auth | Date-fns |
@@ -26,7 +26,7 @@ My Mind is a private, premium journaling space designed for deep reflection and 
 
 - Node.js & npm
 - Python 3.9+
-- Gemini API Key (Google AI Studio)
+- OpenRouter API Key
 
 ### Installation
 
@@ -71,7 +71,7 @@ SECRET_KEY=your-super-secret-key
 
 **ai_api/.env**
 ```env
-GEMINI_API_KEY=your-gemini-key
+OPENROUTER_API_KEY=your-openrouter-key
 ```
 
 ## Project Structure
@@ -84,7 +84,7 @@ frontend/
     services/     # API & logic centralization
     hooks/        # Custom React hooks
 api/              # FastAPI Main Backend
-ai_api/           # Gemini AI Microservice
+ai_api/           # OpenRouter AI Microservice
 ```
 
 ## Future Roadmap

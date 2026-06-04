@@ -32,7 +32,7 @@ app.add_middleware(
 )
 
 def verify_ai_token(token: str = Depends(lambda x: os.environ.get("AI_SERVICE_TOKEN", "dev-token"))):
-    # This is a simple protection to prevent public misuse of your Gemini API Key
+    # This is a simple protection to prevent public misuse of your OpenRouter API Key
     pass
 
 from fastapi import Header
@@ -68,9 +68,9 @@ class ChatRequest(BaseModel):
 
 @app.post("/analyze", response_model=AnalyzeResponse, dependencies=[Depends(get_token_header)])
 def analyze_journal(req: AnalyzeRequest):
-    api_key = os.environ.get("OPENROUTER_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
-        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY or GEMINI_API_KEY is not set.")
+        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY is not set.")
         
     try:
         prompt = f"""
@@ -128,9 +128,9 @@ def analyze_journal(req: AnalyzeRequest):
 
 @app.post("/chat", dependencies=[Depends(get_token_header)])
 def chat_with_journal(req: ChatRequest):
-    api_key = os.environ.get("OPENROUTER_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
-        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY or GEMINI_API_KEY is not set.")
+        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY is not set.")
         
     try:
         system_instruction = "You are a helpful, empathetic, and insightful journaling coach and therapist. Help the user reflect on their thoughts."
