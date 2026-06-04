@@ -4,8 +4,8 @@ from typing import Optional
 from passlib.context import CryptContext
 import os
 
-# Supporting both PBKDF2 and BCrypt for compatibility
-pwd_context = CryptContext(schemes=["pbkdf2_sha256", "bcrypt"], deprecated="auto")
+# Using PBKDF2 for password hashing (supported natively in pure Python)
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY:

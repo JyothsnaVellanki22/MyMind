@@ -5,4 +5,3 @@ passlib
 python-multipart
 uvicorn
 psycopg2-binary
-bcrypt
